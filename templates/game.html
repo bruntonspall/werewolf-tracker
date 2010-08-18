@@ -4,6 +4,10 @@
 
 {% block mainbody %}
 <h1>{{game.name}}</h1>
+        <dl>
+            <dt>Current Turn</dt>
+            <dd>{{game.turn}}</dd>
+        </dl>
 <div>
 <h2>Players</h2>
 <ul>
@@ -26,6 +30,48 @@
                     <label for="turn">Current Turn</label> <input id="turn" type="text" name="turn" placeholder="Day 1"/>
                     <input type="submit" value="Change Turn"/>
                 </form>
-            
+            <ol>
+                {% for vote in game.votes %}
+                <li>{{vote.source.name}} voted for {{vote.target.name}} because {{vote.reason}}</li>
+                {% endfor %}
+            </ol>
+             <script>
+            console.log('testing');
+            $(function() {
+                if (!Modernizr.inputtypes.datetime){
+                    console.log('datetime');
+                    jQuery('#date').datepicker();
+                }
+                jQuery('#source').autocomplete({
+                    source: '/game/{{game.id}}/players/json'
+                });
+                jQuery('#target').autocomplete({
+                    source: '/game/{{game.id}}/players/json'
+                });
+            });
+        </script>
+    <div class="vote_entry">
+        <form action="/game/{{game.id}}/vote" method="post">
+            <label for="date">At: </label>
+            <input name="date" id='date' type="date" placeholder="2010-10-10" required=true/>
+
+            <label for="time">Time: </label>
+            <input name="time" id='time' type="time" placeholder="18:01"/>
+
+            <label for="gameturn">Turn: </label>
+            <input name="turn" id='gameturn' type="text" placeholder="Game Turn" value="{{game.turn}}">
+
+            <label for="source">Who: </label>
+            <input name="source" id='source' type="text" placeholder="Who voted">
+
+            <label for="target">For: </label>
+            <input name="target" id='target' type="text" placeholder="Voted For">
+
+            <label for="reason">Because: </label>
+            <input name="reason" id='reason' type="text" placeholder="Reason">
+
+            <input name="submit" type="submit" value="Submit" />
+        </form>
+    </div>
         </div>
 {% endblock %}

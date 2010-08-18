@@ -19,6 +19,8 @@ from google.appengine.ext.webapp import util
 from helpers import *
 from models import *
 import logging
+import time
+
 
 
 class MainHandler(webapp.RequestHandler):
@@ -28,11 +30,16 @@ class MainHandler(webapp.RequestHandler):
 class VoteHandler(webapp.RequestHandler):
     def get(self, game):
         render_template(self, 'votes.html', {'game':Game.get_by_name(game)})
-    def post(self):
-        logging.info("source:"+self.request.get('source'))
-        logging.info("target:"+self.request.get('target'))
-        logging.info("datetime:"+self.request.get('datetime'))
-        pass
+    def post(self, gamename):
+        game = Game.get_by_name(gamename)
+        source = game.players.filter('name =', self.request.get('source')).get()
+        target = game.players.filter('name =', self.request.get('target')).get()
+        vote_date = time.strptime(self.request.get('date'),'%m/%d/%Y')
+        vote_time = time.strptime(self.request.get('time'), '%H:%M')
+        reason = self.request.get('reason')
+        turn = self.request.get('turn')
+        Vote.create(datetime.date(vote_date.tm_year, vote_date.tm_mon, vote_date.tm_mday), datetime.time(vote_time.tm_hour, vote_time.tm_min), turn, source, target, game, reason)
+        self.redirect('/game/'+game.id)
 
 class GameHandler(webapp.RequestHandler):
     def get(self, game=""):
@@ -46,6 +53,13 @@ class PlayerHandler(webapp.RequestHandler):
     def post(self, game):
         player = Player.create(name=self.request.get('player'), game=Game.get_by_name(game))
         self.redirect('/game/'+game)
+
+class TurnHandler(webapp.RequestHandler):
+    def post(self, game):
+        game = Game.get_by_name(game)
+        game.turn = self.request.get('turn')
+        game.save()
+        self.redirect('/game/'+game.id)
 
 class PlayerJsonHandler(webapp.RequestHandler):
     def get(self, game=""):
@@ -63,6 +77,7 @@ def main():
     ('/game/(?P<game>[a-z-_0-9]+)/vote', VoteHandler),
     ('/game(?:/(?P<game>[a-z-_0-9]+))?', GameHandler),
     ('/game/(?P<game>[a-z-_0-9]+)/players', PlayerHandler),
+    ('/game/(?P<game>[a-z-_0-9]+)/turn', TurnHandler),
     ('/game/(?P<game>[a-z-_0-9]+)/players/json', PlayerJsonHandler),
     ],
                                          debug=True)

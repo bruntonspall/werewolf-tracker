@@ -53,9 +53,10 @@ class Vote(db.Model):
     turn = db.StringProperty(required=True)
     source = db.ReferenceProperty(Player, collection_name="lynch_votes", required=True)
     target = db.ReferenceProperty(Player, collection_name="votes", required=True)
+    game = db.ReferenceProperty(Game, collection_name="votes", required=True)
     reason = db.StringProperty(required=False)
     @staticmethod
-    def create(date, time, turn, source, target, reason=""):
-        obj = Vote(date=date, time=time, turn=turn, source=source, target=target, reason=reason)
+    def create(date, time, turn, source, target, game, reason=""):
+        obj = Vote(date=date, time=time, turn=turn, source=source, target=target, game=game, reason=reason)
         obj.save()
         return obj

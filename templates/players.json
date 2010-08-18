@@ -1,9 +1,5 @@
 [
     {% for player in players %}
-{
-"id": "{{player.name}}",
-"value": "{{player.name}}",
-"label":"{{player.name}}"
-}{% if forloop.last %}{%else%},{% endif %}
+"{{player.name}}"{% if forloop.last %}{%else%},{% endif %}
 {% endfor %}
 ]
