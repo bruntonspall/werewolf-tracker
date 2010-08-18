@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}{{game.name}}{% endblock %}        
+
+{% block mainbody %}
+<h1>{{game.name}}</h1>
+<div>
+<h2>Players</h2>
+<ul>
+	{% for player in game.players %}
+	<li>
+		<span class="name">{{player.name}}</span>
+		<span class="status">{{player.status}}</span>
+		<span class="role">{{player.role}}</span>		
+	</li>
+	{% endfor %}	
+</ul>
+    <form action="/game/{{game.id}}/players" method="post">
+            <label for="player">Name of Player</label> <input id="player" type="text" name="player" />
+            <input type="submit" value="Add Player"/>
+        </form>
+</div>
+        <div>
+            <h2>Turns and Votes</h2>
+            <form action="/game/{{game.id}}/turn" method="post">
+                    <label for="turn">Current Turn</label> <input id="turn" type="text" name="turn" placeholder="Day 1"/>
+                    <input type="submit" value="Change Turn"/>
+                </form>
+            
+        </div>
+{% endblock %}

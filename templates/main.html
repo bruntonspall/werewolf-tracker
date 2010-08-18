@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block mainbody %}
+<h1>Werewolf Tracker</h1>
+<ul>
+	{% for game in games %}
+	<li><a href="/game/{{game.id}}">{{game.name}}</a></li>
+	{% endfor %}
+</ul>
+        <form action="/game" method="post">
+            <label for="gamename">Name of Game</label> <input id="gamename" type="text" name="gamename" />
+            <input type="submit"/>
+        </form>
+        {% endblock %}
