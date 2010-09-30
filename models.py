@@ -37,7 +37,7 @@ class Game(db.Model):
         return game
 
     def votes_in_order(self):
-        return self.votes.order('date').order('time')
+        return self.votes.filter('turn =', self.turn).order('date').order('time')
     def players_by_name(self):
         return self.players.order('lname')
 
