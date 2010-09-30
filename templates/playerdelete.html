@@ -14,7 +14,7 @@
     <h2>Player {{player.name}}</h2>
     <h3>Currently voted for by</h3>
     <ul>
-     {% for vote in player.current_votes_against %}
+     {% for vote in player.votes %}
             <li>{{vote.source.name}} <span class="editbox"><a href="/game/{{game.id}}/vote/{{vote.key}}/edit">Edit</a></span>
             </li>
         {% endfor %}
