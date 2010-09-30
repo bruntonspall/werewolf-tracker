@@ -3,53 +3,69 @@
 {% block title %}{{game.name}}{% endblock %}        
 
 {% block mainbody %}
-<h1>{{game.name}}</h1>
-        <dl>
-            <dt>Current Turn</dt>
-            <dd>{{game.turn}}</dd>
-        </dl>
-<div>
-<h2>Players</h2>
-<ul>
-	{% for player in game.players %}
-	<li>
-		<span class="name">{{player.name}}</span>
-		<span class="status">{{player.status}}</span>
-		<span class="role">{{player.role}}</span>		
-	</li>
-	{% endfor %}	
-</ul>
-    <form action="/game/{{game.id}}/players" method="post">
-            <label for="player">Name of Player</label> <input id="player" type="text" name="player" />
-            <input type="submit" value="Add Player"/>
-        </form>
+<div class="turndata grid_24 alpha omega">
+    <h1>Game: {{game.name}}</h1>
+    <dl>
+        <dt>Current Turn</dt>
+        <dd>{{game.turn}}</dd>
+    </dl>
 </div>
-        <div>
-            <h2>Turns and Votes</h2>
-            <form action="/game/{{game.id}}/turn" method="post">
-                    <label for="turn">Current Turn</label> <input id="turn" type="text" name="turn" placeholder="Day 1"/>
-                    <input type="submit" value="Change Turn"/>
-                </form>
-            <ol>
-                {% for vote in game.votes %}
-                <li>{{vote.source.name}} voted for {{vote.target.name}} because {{vote.reason}}</li>
+<div class="playerlist grid_8 alpha">
+    <h2>{{game.players.count}} Players</h2>
+    <ul>
+        {% for player in game.players %}
+        <li class="player">
+            <span class="player_name">{{player.name}}</span>
+            <span class="player_votes">{{player.current_votes_against.count}}</span>
+            <span class="player_voting">{{player.current_vote.target.name}}</span>
+<span class="lynch_list">
+                <ul>
+                {% for vote in player.current_votes_against %}
+                    <li>{{vote.source.name}}</li>
                 {% endfor %}
-            </ol>
-             <script>
-            console.log('testing');
-            $(function() {
-                if (!Modernizr.inputtypes.datetime){
-                    console.log('datetime');
-                    jQuery('#date').datepicker();
-                }
-                jQuery('#source').autocomplete({
-                    source: '/game/{{game.id}}/players/json'
-                });
-                jQuery('#target').autocomplete({
-                    source: '/game/{{game.id}}/players/json'
-                });
+                </ul>
+</span>
+            {% if player.status %}<span class="status">{{player.status}}</span>{%endif%}
+            {% if player.role %}<span class="role">{{player.role}}</span>{%endif%}
+            <span class="controls">[<a href="/game/{{game.id}}/player/{{player.key}}/delete">x</a>]</span>
+        </li>
+        {% endfor %}
+    </ul>
+    <form class="new_player" action="/game/{{game.id}}/players" method="post">
+        <label for="player">Name of Player</label> <input id="player" type="text" name="player" />
+        <input type="submit" value="Add Player"/>
+    </form>
+</div>
+<div class="votelist grid_16 omega">
+    <h2>Turns and Votes</h2>
+    <form action="/game/{{game.id}}/turn" method="post">
+            <label for="turn">Current Turn</label> <input id="turn" type="text" name="turn" placeholder="Day 1"/>
+            <input type="submit" value="Change Turn"/>
+        </form>
+    <ol>
+        {% for vote in game.votes_in_order %}
+        <li>{{vote.date}} {{vote.time}} {{vote.turn}}: {{vote.source.name}} voted for {{vote.target.name}}
+        {% if vote.reason %} because {{vote.reason}}{%endif%}
+        <span class="editbox"><a href="/game/{{game.id}}/vote/{{vote.key}}/edit">Edit</a></span>
+        <span class="deletebox"><a href="/game/{{game.id}}/vote/{{vote.key}}/delete">Delete</a></span>
+        </li>
+        {% endfor %}
+    </ol>
+     <script>
+        console.log('testing');
+        $(function() {
+            if (!Modernizr.inputtypes.datetime){
+                console.log('datetime');
+                jQuery('#date').datepicker({dateFormat:"yy-mm-dd"});
+            }
+            jQuery('#source').autocomplete({
+                source: '/game/{{game.id}}/players/json'
             });
-        </script>
+            jQuery('#target').autocomplete({
+                source: '/game/{{game.id}}/players/json'
+            });
+        });
+    </script>
     <div class="vote_entry">
         <form action="/game/{{game.id}}/vote" method="post">
             <label for="date">At: </label>
@@ -73,5 +89,5 @@
             <input name="submit" type="submit" value="Submit" />
         </form>
     </div>
-        </div>
+</div>
 {% endblock %}

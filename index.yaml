@@ -14,3 +14,21 @@ indexes:
   properties:
   - name: game
   - name: name
+
+- kind: Vote
+  properties:
+  - name: date
+  - name: time
+
+- kind: Vote
+  properties:
+  - name: game
+  - name: date
+  - name: time
+
+- kind: Vote
+  properties:
+  - name: target
+  - name: turn
+  - name: valid
+  - name: time

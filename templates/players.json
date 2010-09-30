@@ -1,5 +1,4 @@
-[
-    {% for player in players %}
-"{{player.name}}"{% if forloop.last %}{%else%},{% endif %}
-{% endfor %}
-]
+{% extends "base.json" %}
+{% block entry %}
+"{{item.name}}"
+{% endblock %}

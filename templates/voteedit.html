@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}{{game.name}}{% endblock %}        
+
+{% block mainbody %}
+<div class="turndata grid_24 alpha omega">
+    <h1>Game: {{game.name}}</h1>
+    <dl>
+        <dt>Current Turn</dt>
+        <dd>{{game.turn}}</dd>
+    </dl>
+</div>
+<div class="votelist grid_16 omega">
+    <h2>Turns and Votes</h2>
+        <li>{{vote.date}} {{vote.time}} {{vote.turn}}: {{vote.source.name}} voted for {{vote.target.name}}{% if vote.reason %} because {{vote.reason}}{%endif%}<span class="editbox"><a href="/game/{{game.id}}/vote/{{vote.key}}/edit">Edit</a></span><span class="deletebox"><a href="/game/{{game.id}}/vote/{{vote.key}}/delete">Delete</a></span></li>
+     <script>
+        console.log('testing');
+        $(function() {
+            if (!Modernizr.inputtypes.datetime){
+                console.log('datetime');
+                jQuery('#date').datepicker({dateFormat:"yy-mm-dd"});
+            }
+            jQuery('#source').autocomplete({
+                source: '/game/{{game.id}}/players/json'
+            });
+            jQuery('#target').autocomplete({
+                source: '/game/{{game.id}}/players/json'
+            });
+        });
+    </script>
+    <div class="vote_entry">
+        <form action="" method="post">
+            <label for="date">At: </label>
+            <input name="date" id='date' type="date" placeholder="10/31/2010" value="{{vote.date}}" required=true/>
+ 
+            <label for="time">Time: </label>
+            <input name="time" id='time' type="time" placeholder="18:01" value="{{vote.time}}"/>
+			<br/>
+            <label for="gameturn">Turn: </label>
+            <input name="turn" id='gameturn' type="text" placeholder="Game Turn" value="{{game.turn}}">
+			<br/>
+            <label for="source">Who: </label>
+            <input name="source" id='source' type="text" placeholder="Who voted" value="{{vote.source.name}}">
+
+            <label for="target">For: </label>
+            <input name="target" id='target' type="text" placeholder="Voted For" value="{{vote.target.name}}">
+			<br/>
+
+            <label for="reason">Because: </label>
+            <input name="reason" id='reason' type="text" placeholder="Reason" value="{{vote.reason}}">
+			<br/>
+
+            <input name="submit" type="submit" value="Submit" />
+        </form>
+    </div>
+</div>
+{% endblock %}

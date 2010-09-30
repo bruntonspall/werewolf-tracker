@@ -57,3 +57,70 @@ body {
 abbr {
 	cursor: help;
 }
+
+header {
+    padding-bottom: 30px;
+}
+footer {
+    padding-top: 30px;
+    text-align: center;
+}
+li.player {
+    clear: both;
+}
+form.new_player {
+    padding-top: 20px;
+    clear: both;
+}
+.player_name {
+    width: 120px;
+    display: block;
+    margin-right: 20px;
+    float: left;
+}
+.player_votes {
+    width: 20px;
+    display: block;
+    margin-right: 10px;
+    float: left;
+}
+.player_voting {
+    width: 100px;
+    display: block;
+    float: left;
+}
+
+.turndata dt {
+    float: left;
+    margin-right: 20px;
+}
+
+.turndata dd {
+    margin-left: 20px;
+}
+
+.lynch_list {
+    clear: left;
+    float: left;
+    margin-left: 30px;
+}
+
+.lynch_list li {
+    float: left;
+    margin-right: 5px;
+}
+.lynch_list li:after {
+    content: ',';
+}
+.editbox {
+    background-color: #9DD;
+    border: 1px solid #377;
+    padding: 1px;
+    margin: 2px 5px 2px 5px;
+}
+.deletebox {
+    background-color: #D99;
+    border: 1px solid #733;
+    padding: 1px;
+    margin: 2px 5px 2px 5px;
+}

@@ -1,13 +1,17 @@
 {% extends "base.html" %}
+        {% block title %}Werewolf Tracker{% endblock %}
 {% block mainbody %}
-<h1>Werewolf Tracker</h1>
+        <div class="grid_16 alpha">
 <ul>
 	{% for game in games %}
 	<li><a href="/game/{{game.id}}">{{game.name}}</a></li>
 	{% endfor %}
 </ul>
+            </div>
+        <div class="grid_8 omega">
         <form action="/game" method="post">
-            <label for="gamename">Name of Game</label> <input id="gamename" type="text" name="gamename" />
-            <input type="submit"/>
+            <label for="gamename">Name</label> <input id="gamename" type="text" name="gamename" placeholder="Game Name"/>
+            <input type="submit" value="Create"/>
         </form>
+            </div>
         {% endblock %}

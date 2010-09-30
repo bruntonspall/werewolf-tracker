@@ -1,0 +1,10 @@
+{% extends "base.json" %}
+{% block entry %}
+{
+	"date":"{{item.date}}",
+	"time":"{{item.time}}",
+	"turn":"{{item.turn}}",
+	"source":"{{item.source}}",
+	"target":"{{item.target}}",
+	"valid":"{{item.valid}}"
+{% endblock %}

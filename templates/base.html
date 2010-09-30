@@ -57,6 +57,7 @@
     <link rel="stylesheet" href="/static/css/_patches/win-ie-old.css" media="all" />
     <![endif]-->
     <link rel="stylesheet" href="/static/css/smoothness/jquery-ui-1.8.4.custom.css" media="all" />
+    <link rel="stylesheet" href="/static/css/960_24_col.css" media="all" />
 
 	<!-- jQuery -->
 	<script src="/static/js/jquery-1.4.2.min.js"></script>
@@ -69,12 +70,13 @@
 
 <body>
 
-<section>
+<section class="container_24">
 
-	<header>
-		
-		<h1><a href="/">{% block webtitle %}{% endblock %}</a></h1>
-		
+	<header class="grid_24">
+		<div class="grid_16 alpha">
+		<h1><a href="/">{% block webtitle %}The Werewolf Tracker{% endblock %}</a></h1>
+		    </div>
+        <div class="grid_8 omega">
 		<nav>
 		
             {% block outernav %}
@@ -85,16 +87,17 @@
 			</ol>
             {% endblock %}
 		</nav>
+            </div>
 	
 	</header>
 	
-	<article>
+	<article class="grid_24">
 		
 {% block mainbody %}
         {% endblock %}
 	</article>
 
-	<footer>
+	<footer class="grid_24">
 		
 		<p>&copy; Copyright Michael Brunton-Spall 2010. All Rights Reserved.</p>
 		

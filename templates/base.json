@@ -1,0 +1,10 @@
+{% if callback %}{{callback}}({% endif %}
+{% block main %}
+	[
+		{% for item in items %}
+			{% block entry %}{} {% endblock %}
+			{% if forloop.last %}{% else %},{% endif %}
+		{% endfor %}
+	]
+{% endblock main %}
+{% if callback %}){% endif %}
