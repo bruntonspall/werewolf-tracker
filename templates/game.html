@@ -13,7 +13,7 @@
 <div class="playerlist grid_8 alpha">
     <h2>{{game.players.count}} Players</h2>
     <ul>
-        {% for player in game.players %}
+        {% for player in game.players_by_name %}
         <li class="player">
             <span class="player_name">{{player.name}}</span>
             <span class="player_votes">{{player.current_votes_against.count}}</span>

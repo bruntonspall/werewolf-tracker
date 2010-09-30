@@ -38,6 +38,8 @@ class Game(db.Model):
 
     def votes_in_order(self):
         return self.votes.order('date').order('time')
+    def players_by_name(self):
+        return self.players.order('lname')
 
 class Player(db.Model):
     name = db.StringProperty(required=True)
