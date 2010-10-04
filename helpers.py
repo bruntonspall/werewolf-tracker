@@ -18,7 +18,8 @@ def render_admin_template(self, end_point, template_values):
     if user:
         template_values['greeting'] = ("Welcome, %s! (<a href=\"%s\">sign out</a>)" %
                     (user.nickname(), users.create_logout_url("/admin/")))
-
+    # For json calls
+    template_values["callback"] = self.request.get('callback')
     render_template(self, end_point, template_values)
 
 def render_template(self, end_point, template_values):

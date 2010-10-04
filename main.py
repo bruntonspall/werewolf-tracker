@@ -27,20 +27,6 @@ class MainHandler(webapp.RequestHandler):
     def get(self):
         render_template(self, 'main.html', {'games': Game.all()})
 
-class VoteHandler(webapp.RequestHandler):
-    def get(self, game):
-        render_template(self, 'votes.html', {'game':Game.get_by_name(game)})
-    def post(self, gamename):
-        game = Game.get_by_name(gamename)
-        source = game.players.filter('name =', self.request.get('source')).get()
-        target = game.players.filter('name =', self.request.get('target')).get()
-        vote_date = time.strptime(self.request.get('date'),'%Y-%m-%d')
-        vote_time = time.strptime(self.request.get('time'), '%H:%M')
-        reason = self.request.get('reason')
-        turn = self.request.get('turn')
-        Vote.create(datetime.date(vote_date.tm_year, vote_date.tm_mon, vote_date.tm_mday), datetime.time(vote_time.tm_hour, vote_time.tm_min), turn, source, target, game, reason)
-        self.redirect('/game/'+game.id)
-
 class AutoVoteHandler(webapp.RequestHandler):
     def post(self):
         gamename = KeyValue.get('current_game')
@@ -61,19 +47,48 @@ class AutoVoteHandler(webapp.RequestHandler):
         logging.info("Creating vote at %s in game %s on turn %s from %s to %s" % (vote_dt, gamename, turn, source, target))
         Vote.create(vote_dt.date(), vote_dt.time(), turn, source, target, game, "")
         render_template(self, 'votes.json', {"items":game.votes_in_order(), "callback":self.request.get('callback')})
-        
-class VoteJsonHandler(webapp.RequestHandler):
+
+class NewGameHandler(webapp.RequestHandler):
+    def post(self, game=""):
+        game = Game.create(self.request.get('gamename'))
+        self.redirect('/game/'+game.id)
+
+class GameHandler(webapp.RequestHandler):
+    def get(self, gamename=""):
+        game = Game.get_by_name(gamename)
+        if game:
+            KeyValue.set('current_game', gamename)
+        render_template(self, 'game.html', {"game":game})
+    def post(self, game):
+        game = Game.get_by_name(game)
+        game.turn = self.request.get('turn')
+        game.save()
+        self.redirect('/game/'+game.id)
+
+class NewVoteHandler(webapp.RequestHandler):
+    def post(self, gamename):
+        game = Game.get_by_name(gamename)
+        source = game.players.filter('name =', self.request.get('source')).get()
+        target = game.players.filter('name =', self.request.get('target')).get()
+        vote_date = time.strptime(self.request.get('date'),'%Y-%m-%d')
+        vote_time = time.strptime(self.request.get('time'), '%H:%M')
+        reason = self.request.get('reason')
+        turn = self.request.get('turn')
+        Vote.create(datetime.date(vote_date.tm_year, vote_date.tm_mon, vote_date.tm_mday), datetime.time(vote_time.tm_hour, vote_time.tm_min), turn, source, target, game, reason)
+        self.redirect('/game/'+game.id)
+      
+class VoteListHandler(webapp.RequestHandler):
     def get(self, gamename=""):
         game = Game.get_by_name(gamename)
         self.response.headers['Content-Type'] = 'application/json'
-        render_template(self, 'votes.json', {"items":game.votes_in_order(), "callback":self.request.get('callback')})
+        render_template(self, 'vote/list.json', {"items":game.votes_in_order(), "callback":self.request.get('callback')})
 
 class EditVoteHandler(webapp.RequestHandler):
     def get(self, gamename="", votekey=""):
         logging.info("Editing vote for game %s and vote %s" % (gamename, votekey))
         game = Game.get_by_name(gamename)
         vote = Vote.get(votekey)
-        render_template(self, 'voteedit.html', {"vote":vote, "game":game})
+        render_template(self, 'vote/edit.html', {"vote":vote, "game":game})
     def post(self, gamename="", votekey=""):
         game = Game.get_by_name(gamename)
         vote = Vote.get(votekey)
@@ -91,67 +106,74 @@ class DeleteVoteHandler(webapp.RequestHandler):
     def get(self, gamename="", votekey=""):
         game = Game.get_by_name(gamename)
         vote = Vote.get(votekey)
-        render_template(self, 'votedelete.html', {"vote":vote, "game":game})
+        render_template(self, 'vote/delete.html', {"vote":vote, "game":game})
     def post(self, gamename="", votekey=""):
         game = Game.get_by_name(gamename)
         vote = Vote.get(votekey)
         vote.delete()
         self.redirect('/game/%s' % (gamename))
-        
-class DeletePlayerHandler(webapp.RequestHandler):
-    def get(self, gamename="", playerkey=""):
-        game = Game.get_by_name(gamename)
-        player = Player.get(playerkey)
-        render_template(self, 'playerdelete.html', {"player":player, "game":game})
-    def post(self, gamename="", playerkey=""):
-        Player.delete(playerkey)
-        self.redirect('/game/%s' % (gamename))
 
-class GameHandler(webapp.RequestHandler):
-    def get(self, gamename=""):
-        game = Game.get_by_name(gamename)
-        if game:
-            KeyValue.set('current_game', gamename)
-        render_template(self, 'game.html', {"game":game})
-    def post(self, game=""):
-        game = Game.create(self.request.get('gamename'))
-        self.redirect('/game/'+game.id)
-
-class PlayerHandler(webapp.RequestHandler):
+class NewPlayerHandler(webapp.RequestHandler):
     def post(self, game):
         player = Player.create(name=self.request.get('player'), game=Game.get_by_name(game))
         self.redirect('/game/'+game)
 
-class TurnHandler(webapp.RequestHandler):
-    def post(self, game):
-        game = Game.get_by_name(game)
-        game.turn = self.request.get('turn')
-        game.save()
-        self.redirect('/game/'+game.id)
-
-class PlayerJsonHandler(webapp.RequestHandler):
-    def get(self, game=""):
-        self.response.headers['Content-Type'] = 'application/json'
+class PlayerListHandler(webapp.RequestHandler):
+    def get(self, game="", json=None):
+        template = 'player/list.html'
+        if json:
+            self.response.headers['Content-Type'] = 'application/json'
+            template = 'player/list.json'
+            
         game = Game.get_by_name(game)
         term = self.request.get('term')
-        self.response.headers['Content-Type'] = 'application/json'
-        render_template(self, 'players.json', {"items":game.players.filter('name >',term).filter('name <', term+u'\ufffd'), "callback":self.request.get('callback')})
+        render_template(self, template, {"items":game.players.filter('name >',term).filter('name <', term+u'\ufffd')})
 
+class EditPlayerHandler(webapp.RequestHandler):
+    def get(self, gamename="", votekey=""):
+        game = Game.get_by_name(gamename)
+        vote = Vote.get(votekey)
+        render_template(self, 'voteedit.html', {"vote":vote, "game":game})
+    def post(self, gamename="", votekey=""):
+        game = Game.get_by_name(gamename)
+        vote = Vote.get(votekey)
+        vote.source = game.players.filter('name =', self.request.get('source')).get()
+        vote.target = game.players.filter('name =', self.request.get('target')).get()
+        vote_date = time.strptime(self.request.get('date'),'%Y-%m-%d')
+        vote_time = time.strptime(self.request.get('time'), '%H:%M:%S')
+        vote.reason = self.request.get('reason')
+        vote.date = datetime.date(vote_date.tm_year, vote_date.tm_mon, vote_date.tm_mday)
+        vote.time = datetime.time(vote_time.tm_hour, vote_time.tm_min)
+        vote.save()
+        self.redirect("/game/%s" % (gamename))
+
+class DeletePlayerHandler(webapp.RequestHandler):
+    def get(self, gamename="", playerkey=""):
+        game = Game.get_by_name(gamename)
+        player = Player.get(playerkey)
+        render_template(self, 'player/delete.html', {"player":player, "game":game})
+    def post(self, gamename="", playerkey=""):
+        Player.delete(playerkey)
+        self.redirect('/game/%s' % (gamename))
 
 
 
 def main():
     application = webapp.WSGIApplication([
     ('/', MainHandler),
-    ('/game/(?P<game>[a-z-_0-9]+)/vote', VoteHandler),
     ('/api/vote', AutoVoteHandler),
-    ('/game(?:/(?P<game>[a-z-_0-9]+))?', GameHandler),
-    ('/game/(?P<game>[a-z-_0-9]+)/players', PlayerHandler),
-    ('/game/(?P<game>[a-z-_0-9]+)/turn', TurnHandler),
-    ('/game/(?P<game>[a-z-_0-9]+)/vote/(?P<votekey>[a-zA-Z-_0-9]+)/edit', EditVoteHandler),
+    
+    ('/game/(?P<game>[a-z-_0-9]+)/new', NewGameHandler),
+    ('/game/(?P<game>[a-z-_0-9]+)', GameHandler),
+
+    ('/game/(?P<game>[a-z-_0-9]+)/vote/new', NewVoteHandler),
+    ('/game/(?P<game>[a-z-_0-9]+)/vote(?P<json>\.json)?', VoteListHandler),
+    ('/game/(?P<game>[a-z-_0-9]+)/vote/(?P<votekey>[a-zA-Z-_0-9]+)', EditVoteHandler),
     ('/game/(?P<game>[a-z-_0-9]+)/vote/(?P<votekey>[a-zA-Z-_0-9]+)/delete', DeleteVoteHandler),
-    ('/api/(?P<game>[a-z-_0-9]+)/votes/json', VoteJsonHandler),
-    ('/game/(?P<game>[a-z-_0-9]+)/players/json', PlayerJsonHandler),
+
+    ('/game/(?P<game>[a-z-_0-9]+)/player/new', NewPlayerHandler),
+    ('/game/(?P<game>[a-z-_0-9]+)/player(?P<json>\.json)?', PlayerListHandler),
+    ('/game/(?P<game>[a-z-_0-9]+)/player/(?P<votekey>[a-zA-Z-_0-9]+)', EditPlayerHandler),
     ('/game/(?P<game>[a-z-_0-9]+)/player/(?P<votekey>[a-zA-Z-_0-9]+)/delete', DeletePlayerHandler),
     ],
                                          debug=True)

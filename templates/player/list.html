@@ -1,0 +1,33 @@
+{% extends "../base.html" %}
+
+{% block title %}{{game.name}}{% endblock %}        
+
+{% block mainbody %}
+<div class="turndata grid_16 alpha omega">
+    <h1>Game: {{game.name}}</h1>
+    <dl>
+        <dt>Current Turn</dt>
+        <dd>{{game.turn}}</dd>
+    </dl>
+</div>
+<div class="grid_16 alpha omega">
+<ul>
+{% for player in items %}
+            <span class="player_name">{{player.name}}</span>
+            <span class="player_votes">{{player.current_votes_against.count}}</span>
+            <span class="player_voting">{{player.current_vote.target.name}}</span>
+<span class="lynch_list">
+                <ul>
+                {% for vote in player.current_votes_against %}
+                    <li>{{vote.source.name}}</li>
+                {% endfor %}
+                </ul>
+</span>
+            {% if player.status %}<span class="status">{{player.status}}</span>{%endif%}
+            {% if player.role %}<span class="role">{{player.role}}</span>{%endif%}
+            <span class="controls">[<a href="/game/{{game.id}}/player/{{player.key}}/delete">x</a>]</span>
+{% endfor %}
+</ul>
+
+</div>
+{% endblock %}

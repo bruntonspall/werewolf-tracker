@@ -1,0 +1,20 @@
+{% extends "../base.html" %}
+
+{% block title %}{{game.name}}{% endblock %}        
+
+{% block mainbody %}
+<div class="turndata grid_16 alpha omega">
+    <h1>Game: {{game.name}}</h1>
+    <dl>
+        <dt>Current Turn</dt>
+        <dd>{{game.turn}}</dd>
+    </dl>
+</div>
+<div class="grid_16 alpha omega">
+<form action="" method="POST">
+<label for="name">Name: </label>
+<input name="name" id='name' type="text" placeholder="{{player.name}}" value="{{player.name}}" required=true/>
+<input type=submit>
+</form>
+</div>
+{% endblock %}

@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "../base.html" %}
 
 {% block title %}{{game.name}}{% endblock %}        
 
@@ -12,17 +12,17 @@
 </div>
 <div class="grid_16 alpha omega">
     <h2>Player {{player.name}}</h2>
-    <h3>Currently voted for by</h3>
+    <h3>voted for by</h3>
     <ul>
      {% for vote in player.votes %}
-            <li>{{vote.source.name}} <span class="editbox"><a href="/game/{{game.id}}/vote/{{vote.key}}/edit">Edit</a></span>
+            <li>{{vote.turn}} - {{vote.source.name}} <span class="editbox"><a href="/game/{{game.id}}/vote/{{vote.key}}">Edit</a></span>
             </li>
         {% endfor %}
         </ul>
         <h3>Voted for</h3>
         <ul>
          {% for vote in player.lynch_votes %}
-                <li>{{vote.turn}} - {{vote.target.name}} <span class="editbox"><a href="/game/{{game.id}}/vote/{{vote.key}}/edit">Edit</a></span>
+                <li>{{vote.turn}} - {{vote.target.name}} <span class="editbox"><a href="/game/{{game.id}}/vote/{{vote.key}}">Edit</a></span>
                 </li>
             {% endfor %}        
         </ul>
