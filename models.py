@@ -21,6 +21,17 @@ import helpers
 def slugify(word):
     return word.replace(' ', "-").lower()
 
+def cached(name, f, *args, **kwargs):
+    result = memcache.get(name)
+    if not result:
+        logging.info('CACHE MISS for %s' % name)
+        result = f(name, *args, **kwargs)
+    else:
+        logging.info('CACHE HIT for %s' % name)
+    if result:
+        memcache.set(name, result, 60)
+    return result
+
 class Game(db.Model):
     id = db.StringProperty(required=True)
     name = db.StringProperty(required=True)
@@ -29,6 +40,7 @@ class Game(db.Model):
     @staticmethod
     def get_by_name(name):
         return Game.all().filter('id =', name).get()
+
     @staticmethod
     def create(name):
         game = Game(name=name, id=slugify(name))
@@ -37,9 +49,16 @@ class Game(db.Model):
         return game
 
     def votes_in_order(self):
-        return self.votes.filter('turn =', self.turn).order('date').order('time')
+        key = "votes_in_order:%s:%s" % (self.turn, self.id)
+        key="votes_in_order"
+        results = cached(key, lambda key,self: self.votes.filter('turn =', self.turn).order('date').order('time'), self)
+        logging.info('Got results: %s' % results)
+        return results
+
     def players_by_name(self):
-        return self.players.order('lname')
+        key = "players_by_name:%s:%s" % (self.turn, self.id)
+        players = cached(key, lambda key,self: self.players.order('lname'), self)
+        return players
 
 class Player(db.Model):
     name = db.StringProperty(required=True)
@@ -48,11 +67,14 @@ class Player(db.Model):
     allegiance = db.StringProperty(required=False)
     status = db.StringProperty(required=False)
     game = db.ReferenceProperty(Game, collection_name="players")
+
     @staticmethod
     def create(name, game):
         obj = Player(name=name, lname=name.lower(), game=game)
         obj.save()
+        memcache.delete("players_by_name:%s:%s" % (game.turn, game.key()))
         return obj
+
     @staticmethod
     def delete(key):
         player = Player.get(key)
@@ -61,17 +83,12 @@ class Player(db.Model):
         db.delete(player)
         
     def current_votes_against(self):
-        turn = self.game.turn
-        return self.votes.filter('valid =',True).filter('turn =',self.game.turn).order('time')
-#        return Vote.all().filter('target =', self).filter('turn =', self.game.turn).filter('valid =', True).count()
+        key = "votes_against:%s:%s" % (self.game.turn, self.lname)
+        return cached(key, lambda key,self: self.votes.filter('valid =',True).filter('turn =',self.game.turn).order('time'), self)
         
     def current_vote(self):
-        turn = self.game.turn
-
-        vote = Vote.all().filter('player =', self).filter('turn =', turn).filter('valid = ', True).get()
-        if vote:
-            return vote
-        return None
+        key = "vote:%s:%s" % (self.game.turn, self.lname)
+        return cached(key, lambda key,self: Vote.all().filter('player =', self).filter('turn =', self.game.turn).filter('valid = ', True).get(), self)
 
 
 class Vote(db.Model):
@@ -99,7 +116,7 @@ class KeyValue(db.Model):
     
     @classmethod
     def get(cls, key, default=None):
-        r = cls.all().filter('k =', key).get()
+        r = cached(key, lambda cls: cls.all.filter('k =', key).get(), cls)
         if r:
             return r.v
         return default
@@ -109,9 +126,9 @@ class KeyValue(db.Model):
         r = cls.all().filter('k =', key).get()
         if r:
             r.v = value
-            r.save()
-            return r
-        obj = cls(k=key, v=value)
-        obj.save()
-        return obj
+        else:
+            r = cls(k=key, v=value)
+        r.save()
+        memcache.set(key, r)
+        return r
                 

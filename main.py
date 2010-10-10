@@ -1,3 +1,4 @@
+# vim: ai ts=4 sts=4 et sw=4
 #!/usr/bin/env python
 #
 # Copyright 2007 Google Inc.
@@ -22,10 +23,10 @@ import logging
 import time
 
 
-
 class MainHandler(webapp.RequestHandler):
     def get(self):
         render_template(self, 'main.html', {'games': Game.all()})
+
 
 class AutoVoteHandler(webapp.RequestHandler):
     def post(self):
@@ -56,6 +57,7 @@ class NewGameHandler(webapp.RequestHandler):
 class GameHandler(webapp.RequestHandler):
     def get(self, gamename=""):
         game = Game.get_by_name(gamename)
+        players = game.players_by_name()
         if game:
             KeyValue.set('current_game', gamename)
         render_template(self, 'game.html', {"game":game})
