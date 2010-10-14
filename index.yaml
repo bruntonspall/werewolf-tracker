@@ -34,6 +34,15 @@ indexes:
 - kind: Vote
   properties:
   - name: game
+  - name: source
+  - name: turn
+  - name: valid
+  - name: date
+  - name: time
+
+- kind: Vote
+  properties:
+  - name: game
   - name: turn
   - name: date
   - name: time
@@ -43,4 +52,5 @@ indexes:
   - name: target
   - name: turn
   - name: valid
+  - name: date
   - name: time

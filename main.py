@@ -29,6 +29,8 @@ class MainHandler(webapp.RequestHandler):
 
 
 class AutoVoteHandler(webapp.RequestHandler):
+    def get(self):
+        self.post()
     def post(self):
         gamename = KeyValue.get('current_game')
         if not gamename:
@@ -47,11 +49,17 @@ class AutoVoteHandler(webapp.RequestHandler):
         turn = game.turn
         logging.info("Creating vote at %s in game %s on turn %s from %s to %s" % (vote_dt, gamename, turn, source, target))
         Vote.create(vote_dt.date(), vote_dt.time(), turn, source, target, game, "")
-        render_template(self, 'votes.json', {"items":game.votes_in_order(), "callback":self.request.get('callback')})
+        render_template(self, 'vote/list.json', {"items":game.votes_in_order(), "callback":self.request.get('callback')})
 
 class NewGameHandler(webapp.RequestHandler):
     def post(self, game=""):
         game = Game.create(self.request.get('gamename'))
+        self.redirect('/game/'+game.id)
+
+class GameFixupHandler(webapp.RequestHandler):
+    def get(self, gamename=""):
+        game = Game.get_by_name(gamename)
+        game.fix_up(game.turn)
         self.redirect('/game/'+game.id)
 
 class GameHandler(webapp.RequestHandler):
@@ -165,8 +173,9 @@ def main():
     ('/', MainHandler),
     ('/api/vote', AutoVoteHandler),
     
-    ('/game/(?P<game>[a-z-_0-9]+)/new', NewGameHandler),
+    ('/game/new', NewGameHandler),
     ('/game/(?P<game>[a-z-_0-9]+)', GameHandler),
+    ('/game/(?P<game>[a-z-_0-9]+)/fixup', GameFixupHandler),
 
     ('/game/(?P<game>[a-z-_0-9]+)/vote/new', NewVoteHandler),
     ('/game/(?P<game>[a-z-_0-9]+)/vote(?P<json>\.json)?', VoteListHandler),

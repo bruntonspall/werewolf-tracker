@@ -50,7 +50,6 @@ class Game(db.Model):
 
     def votes_in_order(self):
         key = "votes_in_order:%s:%s" % (self.turn, self.id)
-        key="votes_in_order"
         results = cached(key, lambda key,self: self.votes.filter('turn =', self.turn).order('date').order('time'), self)
         logging.info('Got results: %s' % results)
         return results
@@ -59,6 +58,17 @@ class Game(db.Model):
         key = "players_by_name:%s:%s" % (self.turn, self.id)
         players = cached(key, lambda key,self: self.players.order('lname'), self)
         return players
+
+    def fix_up(self, turn):
+        for vote in self.votes_in_order():
+            #Find replacement votes
+            other_votes = self.votes.filter('turn =', turn).filter('valid =', True).filter('source =', vote.source).order('date').order('time')
+            if other_votes.count() > 1:
+                for v in other_votes:
+                    v.valid = False
+                    v.save()
+                v.valid = True
+                v.save()
 
 class Player(db.Model):
     name = db.StringProperty(required=True)
@@ -84,7 +94,7 @@ class Player(db.Model):
         
     def current_votes_against(self):
         key = "votes_against:%s:%s" % (self.game.turn, self.lname)
-        return cached(key, lambda key,self: self.votes.filter('valid =',True).filter('turn =',self.game.turn).order('time'), self)
+        return cached(key, lambda key,self: self.votes.filter('valid =',True).filter('turn =',self.game.turn).order('date').order('time'), self)
         
     def current_vote(self):
         key = "vote:%s:%s" % (self.game.turn, self.lname)
@@ -110,13 +120,14 @@ class Vote(db.Model):
         obj.save()
         return obj
 
+
 class KeyValue(db.Model):
     k = db.StringProperty(required=True)
     v = db.StringProperty(required=True)
     
     @classmethod
     def get(cls, key, default=None):
-        r = cached(key, lambda cls: cls.all.filter('k =', key).get(), cls)
+        r = cached(key, lambda k,cls: cls.all().filter('k =', k).get(), cls)
         if r:
             return r.v
         return default
