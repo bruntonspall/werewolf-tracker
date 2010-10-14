@@ -124,3 +124,10 @@ form.new_player {
     padding: 1px;
     margin: 2px 5px 2px 5px;
 }
+.valid {
+    background: #CFC;
+}
+.invalid {
+    text-decoration: line-through;
+    background: #CCC;
+}

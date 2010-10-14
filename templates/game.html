@@ -45,7 +45,7 @@
         </form>
     <ol>
         {% for vote in game.votes_in_order %}
-        <li>{{vote.date}} {{vote.time}} {{vote.turn}}: {{vote.source.name}} voted for {{vote.target.name}}
+        <li class="{% if vote.valid %}valid{% else %}invalid{% endif %}">{{vote.date}} {{vote.time}} {{vote.turn}}: {{vote.source.name}} voted for {{vote.target.name}}
         {% if vote.reason %} because {{vote.reason}}{%endif%}
         <span class="editbox"><a href="/game/{{game.id}}/vote/{{vote.key}}">Edit</a></span>
         <span class="deletebox"><a href="/game/{{game.id}}/vote/{{vote.key}}/delete">Delete</a></span>
