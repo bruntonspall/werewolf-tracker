@@ -1,0 +1,10 @@
+{
+  "name": "Detect GiantITP forums and add report vote werewolf button",
+  "version": "1.0",
+  "content_scripts": [
+    {
+      "matches": ["http://localhost/*", "http://www.giantitp.com/forums/*"],
+      "js": ["jquery.min.js", "tim.js", "werewolf.js"]
+    }
+  ]
+}
