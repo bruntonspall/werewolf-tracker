@@ -21,6 +21,7 @@ from helpers import *
 from models import *
 import logging
 import time
+from google.appengine.api.labs import taskqueue
 
 
 class MainHandler(webapp.RequestHandler):
@@ -140,21 +141,14 @@ class PlayerListHandler(webapp.RequestHandler):
         render_template(self, template, {"items":game.players.filter('name >',term).filter('name <', term+u'\ufffd')})
 
 class EditPlayerHandler(webapp.RequestHandler):
-    def get(self, gamename="", votekey=""):
+    def get(self, gamename="", playerkey=""):
         game = Game.get_by_name(gamename)
-        vote = Vote.get(votekey)
-        render_template(self, 'voteedit.html', {"vote":vote, "game":game})
-    def post(self, gamename="", votekey=""):
+        player = Player.get(playerkey)
+        render_template(self, 'player/edit.html', {"player":player, "game":game})
+    def post(self, gamename="", playerkey=""):
         game = Game.get_by_name(gamename)
-        vote = Vote.get(votekey)
-        vote.source = game.players.filter('name =', self.request.get('source')).get()
-        vote.target = game.players.filter('name =', self.request.get('target')).get()
-        vote_date = time.strptime(self.request.get('date'),'%Y-%m-%d')
-        vote_time = time.strptime(self.request.get('time'), '%H:%M:%S')
-        vote.reason = self.request.get('reason')
-        vote.date = datetime.date(vote_date.tm_year, vote_date.tm_mon, vote_date.tm_mday)
-        vote.time = datetime.time(vote_time.tm_hour, vote_time.tm_min)
-        vote.save()
+        player = Player.get(playerkey)
+        player.save()
         self.redirect("/game/%s" % (gamename))
 
 class DeletePlayerHandler(webapp.RequestHandler):
@@ -166,12 +160,20 @@ class DeletePlayerHandler(webapp.RequestHandler):
         Player.delete(playerkey)
         self.redirect('/game/%s' % (gamename))
 
-
+class DateFixHandler(webapp.RequestHandler):
+    def get(self):
+        for vote in Vote.all():
+            taskqueue.add(url="/tasks/fixdate", params={'vote':vote.key()})
+    def post(self):
+        vote = Vote.get(self.request.get('vote'))
+        vote.date = vote.date.replace(month=vote.date.month - 1)
+        vote.save()
 
 def main():
     application = webapp.WSGIApplication([
     ('/', MainHandler),
     ('/api/vote', AutoVoteHandler),
+    ('/tasks/fixdate', DateFixHandler),
     
     ('/game/new', NewGameHandler),
     ('/game/(?P<game>[a-z-_0-9]+)', GameHandler),

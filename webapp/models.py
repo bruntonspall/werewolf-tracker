@@ -96,6 +96,12 @@ class Player(db.Model):
         key = "votes_against:%s:%s" % (self.game.turn, self.lname)
         return cached(key, lambda key,self: self.votes.filter('valid =',True).filter('turn =',self.game.turn).order('date').order('time'), self)
         
+    def all_votes_against_in_order(self):
+        return self.votes.order('date').order('time')
+
+    def all_votes_in_order(self):
+        return self.lynch_votes.order('date').order('time')
+        
     def current_vote(self):
         key = "vote:%s:%s" % (self.game.turn, self.lname)
         return cached(key, lambda key,self: Vote.all().filter('player =', self).filter('turn =', self.game.turn).filter('valid = ', True).get(), self)
@@ -112,7 +118,7 @@ class Vote(db.Model):
     reason = db.StringProperty(required=False)
     @staticmethod
     def create(date, time, turn, source, target, game, reason=""):
-        oldvote = Vote.all().filter('source =', source).filter('turn =', turn).filter('game =',game).get()
+        oldvote = Vote.all().filter('source =', source).filter('turn =', turn).filter('game =',game).filter('valid =', True).get()
         if oldvote:
             oldvote.valid = False
             oldvote.save()

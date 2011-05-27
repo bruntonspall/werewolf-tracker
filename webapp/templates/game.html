@@ -13,7 +13,7 @@
 <div class="playerlist grid_8 alpha">
     <h2>{{game.players_by_name.count}} Players</h2>
     <ul>
-        {% for player in game.players_by_name %}
+        {% for player in game.players_by_name|dictsortreversed:"current_votes_against.count" %}
         <li class="player">
             <span class="player_name">{{player.name}}</span>
             <span class="player_votes">{{player.current_votes_against.count}}</span>
@@ -36,6 +36,12 @@
         <label for="player">Name of Player</label> <input id="player" type="text" name="player" />
         <input type="submit" value="Add Player"/>
     </form>
+    <h2>Table for copy/paste</h2>
+    <pre>
+[table=head]Player|Votes|Voting
+{% for player in game.players_by_name|dictsortreversed:"current_votes_against.count" %}{% if player.current_votes_against.count %}{{player.name}}|{{player.current_votes_against.count}}|{% for vote in player.current_votes_against %}{{vote.source.name}}{% if forloop.last %}{% else %},{% endif %}{% endfor %}
+{% endif %}{% endfor %}[/table]
+    </pre>
 </div>
 <div class="votelist grid_16 omega">
     <h2>Turns and Votes</h2>

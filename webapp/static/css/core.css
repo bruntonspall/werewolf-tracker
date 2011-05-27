@@ -131,3 +131,15 @@ form.new_player {
     text-decoration: line-through;
     background: #CCC;
 }
+
+.votes_against {
+    padding-top: 20px;
+}
+
+.votes_by {
+    padding-top: 20px;
+}
+
+.turn_divider {
+    padding-top: 10px;
+}

@@ -49,6 +49,18 @@ indexes:
 
 - kind: Vote
   properties:
+  - name: source
+  - name: date
+  - name: time
+
+- kind: Vote
+  properties:
+  - name: target
+  - name: date
+  - name: time
+
+- kind: Vote
+  properties:
   - name: target
   - name: turn
   - name: valid

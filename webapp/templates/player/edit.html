@@ -11,10 +11,46 @@
     </dl>
 </div>
 <div class="grid_16 alpha omega">
-<form action="" method="POST">
-<label for="name">Name: </label>
-<input name="name" id='name' type="text" placeholder="{{player.name}}" value="{{player.name}}" required=true/>
-<input type=submit>
-</form>
+	<div class="grid_16 alpha omega">
+		<h2>{{player.name}}</h2>
+		<dl>
+		<dt class="grid_6 alpha">Status</dt><dd class="grid_10 omega">{{player.status}}</dd>
+		<dt class="grid_6 alpha">Role</dt><dd class="grid_10 omega">{{player.role}}</dd>
+		<dt class="grid_6 alpha">Allegiance</dt><dd class="grid_10 omega">{{player.allegiance}}</dd>
+		</dl>
+
+		<div class="clear"></div>
+		<div class="votes_against grid_16 alpha omega">
+			<h2>Votes against</h2>
+			<ul>
+				{% regroup player.all_votes_against_in_order by turn as turn_list %}
+				{% for turn in turn_list %}
+					<li class="turn_divider"><h3>{{turn.grouper}}</h3></li>
+					{% for vote in turn.list %}
+					<li><span class="grid_6 alpha">{{vote.date}} {{vote.time}}</span> <span class="grid_10 omega">{{vote.source.name}}</span></li>
+					{% endfor %}
+				{% endfor %}
+			</ul>
+		</div>
+
+		<div class="clear"></div>
+		<div class="votes_by grid_16 alpha omega">
+			<h2>Votes by</h2>
+			<ul>
+				{% regroup player.all_votes_in_order by turn as turn_list %}
+				{% for turn in turn_list %}
+					<li class="turn_divider"><h3>{{turn.grouper}}</h3></li>
+					{% for vote in turn.list %}
+					<li><span class="grid_6 alpha">{{vote.date}} {{vote.time}}</span> <span class="grid_10 omega">{{vote.target.name}}</span></li>
+					{% endfor %}
+				{% endfor %}
+			</ul>
+		</div>
+	</div>
+	<form action="" method="POST">
+		<label for="name">Name: </label>
+		<input name="name" id='name' type="text" placeholder="{{player.name}}" value="{{player.name}}" required=true/>
+		<input type=submit>
+	</form>
 </div>
 {% endblock %}
